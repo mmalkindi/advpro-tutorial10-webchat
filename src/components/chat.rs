@@ -3,7 +3,7 @@ use web_sys::HtmlInputElement;
 use yew::prelude::*;
 use yew_agent::{Bridge, Bridged};
 
-use crate::{User, services::websocket::WebsocketService};
+use crate::{services::{event_bus::EventBus, websocket::WebsocketService}, User};
 
 pub enum Msg {
     HandleMsg(String),
@@ -43,6 +43,7 @@ pub struct Chat {
     chat_input: NodeRef,
     wss: WebsocketService,
     messages: Vec<MessageData>,
+    _producer: Box<dyn Bridge<EventBus>>,
 }
 impl Component for Chat {
     type Message = Msg;
@@ -75,6 +76,62 @@ impl Component for Chat {
             messages: vec![],
             chat_input: NodeRef::default(),
             wss,
+            _producer: EventBus::bridge(ctx.link().callback(Msg::HandleMsg)),
+        }
+    }
+
+    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+        match msg {
+            Msg::HandleMsg(s) => {
+                let msg: WebSocketMessage = serde_json::from_str(&s).unwrap();
+                match msg.message_type {
+                    MsgTypes::Users => {
+                        let users_from_message = msg.data_array.unwrap_or_default();
+                        self.users = users_from_message
+                            .iter()
+                            .map(|u| UserProfile {
+                                name: u.into(),
+                                avatar: format!(
+                                    "https://avatars.dicebear.com/api/adventurer-neutral/{}.svg",
+                                    u
+                                )
+                                .into(),
+                            })
+                            .collect();
+                        return true;
+                    }
+                    MsgTypes::Message => {
+                        let message_data: MessageData =
+                            serde_json::from_str(&msg.data.unwrap()).unwrap();
+                        self.messages.push(message_data);
+                        return true;
+                    }
+                    _ => {
+                        return false;
+                    }
+                }
+            }
+            Msg::SubmitMessage => {
+                let input = self.chat_input.cast::<HtmlInputElement>();
+                if let Some(input) = input {
+                    //log::debug!("got input: {:?}", input.value());
+                    let message = WebSocketMessage {
+                        message_type: MsgTypes::Message,
+                        data: Some(input.value()),
+                        data_array: None,
+                    };
+                    if let Err(e) = self
+                        .wss
+                        .tx
+                        .clone()
+                        .try_send(serde_json::to_string(&message).unwrap())
+                    {
+                        log::debug!("error sending to channel: {:?}", e);
+                    }
+                    input.set_value("");
+                };
+                false
+            }
         }
     }
 
