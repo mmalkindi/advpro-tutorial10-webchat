@@ -139,14 +139,14 @@ impl Component for Chat {
         let submit = ctx.link().callback(|_| Msg::SubmitMessage);
         html! {
             <div class="flex w-screen">
-                <div class="flex-none w-56 h-screen bg-gray-100 dark:bg-slate-900 border-r border-gray-300 dark:border-slate-700">
+                <div class="flex-none w-56 h-screen bg-gray-100 dark:bg-slate-950 border-r border-gray-300 dark:border-slate-700">
                     <div class="w-full">
                         <div class="text-sm p-3 font-semibold text-center">{"People"}</div>
                     </div>
                     {
                         self.users.clone().iter().map(|u| {
                             html!{
-                                <div class="flex bg-white dark:bg-slate-800 p-2 border-y border-gray-300 dark:border-slate-700 items-center">
+                                <div class="flex bg-white dark:bg-slate-900 p-2 border-y border-gray-300 dark:border-slate-700 items-center">
                                     <div>
                                         <img class="h-12 aspect-square rounded-full border border-gray-300 dark:border-slate-700" src={u.avatar.clone()} alt="avatar"/>
                                     </div>
@@ -163,7 +163,7 @@ impl Component for Chat {
                         }).collect::<Html>()
                     }
                 </div>
-                <div class="grow h-screen flex flex-col dark:bg-slate-800">
+                <div class="grow h-screen flex flex-col dark:bg-slate-900">
                     <div class="w-full h-14 border-gray-300 dark:border-slate-700"><div class="text-xl font-semibold p-3 ps-6">{"#general"}</div></div>
                     <div class="w-full grow overflow-auto p-8 pb-0 border-b border-gray-300 dark:border-slate-700">
                         {
@@ -192,7 +192,7 @@ impl Component for Chat {
                         }
 
                     </div>
-                    <div class="w-full h-14 flex px-2 py-2 items-center bg-gray-100 border-gray-300 dark:border-slate-700 dark:bg-slate-900">
+                    <div class="w-full h-14 flex px-2 py-2 items-center bg-gray-100 border-gray-300 dark:border-slate-700 dark:bg-slate-950">
                         <input ref={self.chat_input.clone()} type="text" placeholder="Message" class="block w-full me-2 py-2 pl-4 bg-white dark:bg-slate-700 rounded-md outline-none" name="message" required=true />
                         <button onclick={submit} class="p-3 shadow-sm bg-blue-600 w-10 h-10 rounded-md flex justify-center items-center color-white">
                             <svg fill="#000000" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="fill-white">
